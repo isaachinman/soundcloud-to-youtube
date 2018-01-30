@@ -1,0 +1,30 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/soundcloud-to-youtube
+    docker:
+      - image: circleci/node:latest
+    steps:
+      - checkout
+      - run:
+          name: Install Chrome
+          command: ${HOME}/${CIRCLE_PROJECT_REPONAME}/install_chrome.sh .google-chrome
+      - run:
+          name: Install missing Debian OS deps
+          command: sudo apt-get -f install
+      - run:
+          name: Install ffmpeg
+          command: ${HOME}/${CIRCLE_PROJECT_REPONAME}/install_ffmpeg.sh
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: Install dependencies
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+            - ~/.google-chrome
+      - run:
+          name: Main script
+          command: npm start
